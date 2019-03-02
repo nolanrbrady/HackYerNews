@@ -9,14 +9,20 @@ import Html.Attributes exposing (class, src)
 ---- MODEL ----
 
 
+type alias FakeNews =
+    { title : String, tag : String }
+
+
 type alias Model =
     { navItems : List String
+    , fakeNews : List FakeNews
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { navItems = [ "News", "Jobs", "Settings" ]
+      , fakeNews = [ { title = "Aerospace News", tag = "science" }, { title = "Programing News is Cool", tag = "compsci" }, { title = "Earth and Neature News", tag = "science" }, { title = "Turing Machine News", tag = "compsci" } ]
       }
     , Cmd.none
     )
@@ -24,6 +30,13 @@ init =
 
 
 ---- HELPER FUNCTIONS -----
+
+
+renderNewsFeed : FakeNews -> Html Msg
+renderNewsFeed news =
+    div [ class "news-item" ]
+        [ h1 [ class "news-title" ] [ text news.title ]
+        ]
 
 
 navItems : String -> Html Msg
@@ -59,7 +72,10 @@ view model =
         , h1 [] [ text "Hack Yer News" ]
         , div [ class "main" ]
             [ div [ class "filter-container" ] [ text "Filter Container" ]
-            , div [ class "news-container" ] [ text "News Container" ]
+            , div [ class "news-container" ]
+                [ text "News Container"
+                , div [] (List.map renderNewsFeed model.fakeNews)
+                ]
             ]
         ]
 

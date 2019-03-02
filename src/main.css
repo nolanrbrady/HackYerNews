@@ -52,7 +52,7 @@ img {
     flex-direction: row;
     width: 90%;
     justify-content: space-around;
-    align-items: center
+    align-items: flex-start;
 }
 
 .filter-container {
@@ -63,4 +63,18 @@ img {
 .news-container {
     width: 70%;
     background-color: #b2b2b2;
+    min-height: 40em;
+}
+
+.news-item {
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    margin: 1em;
+}
+
+.news-title {
+    display: flex;
+    flex-direction: flex-start;
+    padding-left: 2em;
 }
