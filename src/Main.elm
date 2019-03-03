@@ -3,6 +3,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Html exposing (Html, button, div, h1, h2, h4, img, p, text)
 import Html.Attributes exposing (class, src)
+import List.Extra exposing (unique)
 
 
 
@@ -69,8 +70,11 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        tags =
+        allTags =
             List.map (\news -> news.tag) model.fakeNews
+
+        tags =
+            unique allTags
     in
     div []
         [ div [ class "navbar" ]
