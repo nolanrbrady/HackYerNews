@@ -58,6 +58,7 @@ img {
 .filter-container {
     width: 25%;
     background-color: #c2c2c2;
+    min-height: 15em;
 }
 
 .news-container {
@@ -78,3 +79,45 @@ img {
     flex-direction: flex-start;
     padding-left: 2em;
 }
+
+.pill-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 0 1em 0 1em;
+}
+
+.pill {
+    margin: 0px 0.5em 0px 0.5em;
+    padding: 2px 1em;
+    background-color: #293c4b;
+    color: white;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+button {
+    background: none;
+    border: none;
+}
+
+button:focus {
+    outline: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, h2, img, p, text)
+import Html exposing (Html, button, div, h1, h2, h4, img, p, text)
 import Html.Attributes exposing (class, src)
 
 
@@ -30,6 +30,11 @@ init =
 
 
 ---- HELPER FUNCTIONS -----
+
+
+renderTags : String -> Html Msg
+renderTags tag =
+    button [] [ h4 [ class "pill" ] [ text tag ] ]
 
 
 renderNewsFeed : FakeNews -> Html Msg
@@ -63,6 +68,10 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        tags =
+            List.map (\news -> news.tag) model.fakeNews
+    in
     div []
         [ div [ class "navbar" ]
             [ h1 [] [ text "Hack Yer News" ]
@@ -71,7 +80,10 @@ view model =
         , img [ src "/logo.svg" ] []
         , h1 [] [ text "Hack Yer News" ]
         , div [ class "main" ]
-            [ div [ class "filter-container" ] [ text "Filter Container" ]
+            [ div [ class "filter-container" ]
+                [ text "Filter Container"
+                , div [ class "pill-container" ] (List.map renderTags tags)
+                ]
             , div [ class "news-container" ]
                 [ text "News Container"
                 , div [] (List.map renderNewsFeed model.fakeNews)
