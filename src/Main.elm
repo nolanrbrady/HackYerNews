@@ -17,6 +17,7 @@ type alias FakeNews =
 
 type alias Model =
     { navItems : List String
+    , activeTags : List String
     , fakeNews : List FakeNews
     }
 
@@ -25,6 +26,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { navItems = [ "News", "Jobs", "Settings" ]
       , fakeNews = [ { title = "Aerospace News", tag = "science" }, { title = "Programing News is Cool", tag = "compsci" }, { title = "Earth and Neature News", tag = "science" }, { title = "Turing Machine News", tag = "compsci" } ]
+      , activeTags = []
       }
     , Cmd.none
     )
@@ -51,11 +53,9 @@ navItems item =
     p [ class "nav-item" ] [ text item ]
 
 
-filterNews tag model =
-    List.filter (\news -> news.tag == tag) model.fakeNews
 
-
-
+-- filterNews tag model =
+--     List.filter (\news -> news.tag == tag) model.fakeNews
 ---- UPDATE ----
 
 
@@ -71,7 +71,7 @@ update msg model =
             ( model, Cmd.none )
 
         FilterNews tag ->
-            ( { model | fakeNews = filterNews tag model }, Cmd.none )
+            ( { model | activeTags = tag :: model.activeTags }, Cmd.none )
 
 
 
@@ -86,6 +86,13 @@ view model =
 
         tags =
             unique allTags
+
+        articles =
+            if List.length model.activeTags == 0 then
+                model.fakeNews
+
+            else
+                List.filter (\article -> List.member article.tag model.activeTags) model.fakeNews
     in
     div []
         [ div [ class "navbar" ]
@@ -101,7 +108,7 @@ view model =
                 ]
             , div [ class "news-container" ]
                 [ text "News Container"
-                , div [] (List.map renderNewsFeed model.fakeNews)
+                , div [] (List.map renderNewsFeed articles)
                 ]
             ]
         ]
