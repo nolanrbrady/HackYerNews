@@ -3,6 +3,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Html exposing (Html, button, div, h1, h2, h4, img, p, text)
 import Html.Attributes exposing (class, src)
+import Html.Events exposing (onClick)
 import List.Extra exposing (unique)
 
 
@@ -35,7 +36,7 @@ init =
 
 renderTags : String -> Html Msg
 renderTags tag =
-    button [] [ h4 [ class "pill" ] [ text tag ] ]
+    button [ onClick (FilterNews tag) ] [ h4 [ class "pill" ] [ text tag ] ]
 
 
 renderNewsFeed : FakeNews -> Html Msg
@@ -50,17 +51,27 @@ navItems item =
     p [ class "nav-item" ] [ text item ]
 
 
+filterNews tag model =
+    List.filter (\news -> news.tag == tag) model.fakeNews
+
+
 
 ---- UPDATE ----
 
 
 type Msg
     = NoOp
+    | FilterNews String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        FilterNews tag ->
+            ( { model | fakeNews = filterNews tag model }, Cmd.none )
 
 
 
