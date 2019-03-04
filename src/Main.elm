@@ -48,6 +48,14 @@ renderNewsFeed news =
         ]
 
 
+manageActiveTags tag activeTags =
+    if List.member tag activeTags then
+        List.filter (\item -> tag /= item) activeTags
+
+    else
+        tag :: activeTags
+
+
 navItems : String -> Html Msg
 navItems item =
     p [ class "nav-item" ] [ text item ]
@@ -71,7 +79,7 @@ update msg model =
             ( model, Cmd.none )
 
         FilterNews tag ->
-            ( { model | activeTags = tag :: model.activeTags }, Cmd.none )
+            ( { model | activeTags = manageActiveTags tag model.activeTags }, Cmd.none )
 
 
 
@@ -83,9 +91,7 @@ view model =
     let
         allTags =
             List.map (\news -> news.tag) model.fakeNews
-
-        tags =
-            unique allTags
+                |> unique
 
         articles =
             if List.length model.activeTags == 0 then
@@ -104,7 +110,7 @@ view model =
         , div [ class "main" ]
             [ div [ class "filter-container" ]
                 [ text "Filter Container"
-                , div [ class "pill-container" ] (List.map renderTags tags)
+                , div [ class "pill-container" ] (List.map renderTags allTags)
                 ]
             , div [ class "news-container" ]
                 [ text "News Container"
