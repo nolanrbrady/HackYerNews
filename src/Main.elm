@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import HNApi exposing (fetchFakeNews)
 import Html exposing (Html, button, div, h1, h2, h4, img, p, text)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
@@ -25,7 +26,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { navItems = [ "News", "Jobs", "Settings" ]
-      , fakeNews = [ { title = "Aerospace News", tag = "science" }, { title = "Programing News is Cool", tag = "compsci" }, { title = "Earth and Neature News", tag = "science" }, { title = "Turing Machine News", tag = "compsci" } ]
+      , fakeNews = fetchFakeNews
       , activeTags = []
       }
     , Cmd.none
