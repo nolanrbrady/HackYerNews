@@ -6,6 +6,8 @@ import Html exposing (Html, button, div, h1, h2, h4, img, p, text)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
 import List.Extra exposing (unique)
+import Http
+import Json.Decode exposing (Decoder, int, list, string)
 
 
 
@@ -20,6 +22,7 @@ type alias Model =
     { navItems : List String
     , activeTags : List String
     , fakeNews : List FakeNews
+    , articleIds : List Int
     }
 
 
@@ -28,6 +31,7 @@ init =
     ( { navItems = [ "News", "Jobs", "Settings" ]
       , fakeNews = fetchFakeNews
       , activeTags = []
+      , articleIds = []
       }
     , Cmd.none
     )
@@ -36,6 +40,11 @@ init =
 
 ---- HELPER FUNCTIONS -----
 
+fetchArticleIds =
+    Http.get
+        { url = "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
+        , expect = Http.expectJson GotArticleIds (list int)
+        }
 
 renderTags : String -> Html Msg
 renderTags tag =
@@ -71,6 +80,9 @@ navItems item =
 type Msg
     = NoOp
     | FilterNews String
+    | FetchArticleIds
+    | GotArticleIds (Result Http.Error (List Int))
+
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -81,7 +93,15 @@ update msg model =
 
         FilterNews tag ->
             ( { model | activeTags = manageActiveTags tag model.activeTags }, Cmd.none )
+        FetchArticleIds ->
+            (model, fetchArticleIds)
 
+        GotArticleIds result ->
+            case result of
+                Ok ids ->
+                    ( {model | articleIds = ids}, Cmd.none)
+                Err _  ->
+                    (model, Cmd.none)
 
 
 ---- VIEW ----
@@ -118,6 +138,10 @@ view model =
                 , div [] (List.map renderNewsFeed articles)
                 ]
             ]
+        , div [] 
+              [ button [ onClick (FetchArticleIds) ] [text "Fetch Article Id"]
+              , text <| String.join " " <| List.map String.fromInt model.articleIds
+              ]
         ]
 
 
