@@ -1,4 +1,5 @@
 import './main.css';
+import './Defaults.css';
 import { Elm } from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 
