@@ -78,21 +78,16 @@ fetchArticleIds =
         }
 
 
-fetchArticle : Maybe Int -> Cmd Msg
-fetchArticle storyId =
-    case storyId of
-        Nothing ->
-            Cmd.none
-
-        Just id ->
-            let
-                baseUrl =
-                    "https://hacker-news.firebaseio.com/v0/item/"
-            in
-            Http.get
-                { url = baseUrl ++ String.fromInt id ++ ".json?print=pretty"
-                , expect = Http.expectJson GotStory storyDecoder
-                }
+fetchArticle : Int -> Cmd Msg
+fetchArticle id =
+    let
+        baseUrl =
+            "https://hacker-news.firebaseio.com/v0/item/"
+    in
+    Http.get
+        { url = baseUrl ++ String.fromInt id ++ ".json?print=pretty"
+        , expect = Http.expectJson GotStory storyDecoder
+        }
 
 
 displayTags : String -> Model -> Html Msg
@@ -173,7 +168,7 @@ update msg model =
         GotArticleIds result ->
             case result of
                 Ok ids ->
-                    ( { model | articleIds = ids }, fetchArticle (List.head ids) )
+                    ( { model | articleIds = ids }, Cmd.batch (List.map (\id -> fetchArticle id) ids) )
 
                 -- |> addToast (Toasty.Defaults.Success "Allright!" "Top Articles Fetched")
                 Err _ ->
@@ -181,7 +176,7 @@ update msg model =
                         |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch top articles. Please try again!")
 
         GetStory storyId ->
-            ( model, fetchArticle (Just storyId) )
+            ( model, fetchArticle storyId )
 
         GotStory result ->
             case result of
