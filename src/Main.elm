@@ -5,12 +5,11 @@ import HNApi exposing (fetchFakeNews)
 import Html exposing (Html, button, div, h1, h2, h4, img, p, text)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
-import List.Extra exposing (unique)
 import Http
-import Json.Decode exposing (Decoder, int, list, string, field)
+import Json.Decode exposing (Decoder, field, int, list, string)
+import List.Extra exposing (unique)
 import Toasty
 import Toasty.Defaults
-
 
 
 
@@ -19,6 +18,7 @@ import Toasty.Defaults
 
 type alias FakeNews =
     { title : String, tag : String }
+
 
 
 -- type alias Story =
@@ -33,13 +33,16 @@ type alias FakeNews =
 --   , url : String
 --   }
 
+
 type alias Story =
-  { title : String
-  }
+    { title : String
+    }
+
 
 storyDecoder : Decoder Story
 storyDecoder =
-    Json.Decode.map Story ( field "title" string )
+    Json.Decode.map Story (field "title" string)
+
 
 type alias Model =
     { navItems : List String
@@ -67,27 +70,42 @@ init =
 
 ---- HELPER FUNCTIONS -----
 
+
 fetchArticleIds =
     Http.get
         { url = "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
         , expect = Http.expectJson GotArticleIds (list int)
         }
-fetchArticle: Maybe Int -> Cmd Msg
+
+
+fetchArticle : Maybe Int -> Cmd Msg
 fetchArticle storyId =
     case storyId of
         Nothing ->
             Cmd.none
-        Just id ->
-            let baseUrl = "https://hacker-news.firebaseio.com/v0/item/"
-            in
-                Http.get
-                  { url = baseUrl ++ String.fromInt id ++ ".json?print=pretty"
-                  , expect = Http.expectJson GotStory storyDecoder
-                  }
 
-renderTags : String -> Html Msg
-renderTags tag =
-    button [ onClick (FilterNews tag) ] [ h4 [ class "pill" ] [ text tag ] ]
+        Just id ->
+            let
+                baseUrl =
+                    "https://hacker-news.firebaseio.com/v0/item/"
+            in
+            Http.get
+                { url = baseUrl ++ String.fromInt id ++ ".json?print=pretty"
+                , expect = Http.expectJson GotStory storyDecoder
+                }
+
+
+displayTags : String -> Model -> Html Msg
+displayTags tag model =
+    if List.member tag model.activeTags then
+        button [ onClick (FilterNews tag) ] [ h4 [ class "pill" ] [ text tag ] ]
+
+    else
+        button [ onClick (FilterNews tag) ] [ h4 [ class "active-pill" ] [ text tag ] ]
+
+
+renderTags allTags model =
+    div [ class "pill-container" ] (List.map (\tag -> displayTags tag model) allTags)
 
 
 renderNewsFeed : FakeNews -> Html Msg
@@ -142,29 +160,37 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
         ToastyMsg subMsg ->
             Toasty.update Toasty.config ToastyMsg subMsg model
+
         FilterNews tag ->
             ( { model | activeTags = manageActiveTags tag model.activeTags }, Cmd.none )
+
         FetchArticleIds ->
-            (model, fetchArticleIds)
+            ( model, fetchArticleIds )
+
         GotArticleIds result ->
             case result of
                 Ok ids ->
-                    ( {model | articleIds = ids}, fetchArticle (List.head ids))
-                    -- |> addToast (Toasty.Defaults.Success "Allright!" "Top Articles Fetched")
-                Err _  ->
-                    (model, Cmd.none)
-                    |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch top articles. Please try again!")
+                    ( { model | articleIds = ids }, fetchArticle (List.head ids) )
+
+                -- |> addToast (Toasty.Defaults.Success "Allright!" "Top Articles Fetched")
+                Err _ ->
+                    ( model, Cmd.none )
+                        |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch top articles. Please try again!")
+
         GetStory storyId ->
-            (model, fetchArticle ( Just storyId ))
+            ( model, fetchArticle (Just storyId) )
+
         GotStory result ->
             case result of
                 Ok story ->
-                  ({model | stories = [ story ]}, Cmd.none)
-                Err _  ->
-                    (model, Cmd.none)
-                    |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch article. Please try again!")
+                    ( { model | stories = story :: model.stories }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+                        |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch article. Please try again!")
 
 
 
@@ -178,12 +204,15 @@ view model =
             List.map (\news -> news.tag) model.fakeNews
                 |> unique
 
-        articles =
+        fakeArticles =
             if List.length model.activeTags == 0 then
                 model.fakeNews
 
             else
                 List.filter (\article -> List.member article.tag model.activeTags) model.fakeNews
+
+        stories =
+            List.map GetStory model.articleIds
     in
     div []
         [ Toasty.view myConfig Toasty.Defaults.view ToastyMsg model.toasties
@@ -196,31 +225,31 @@ view model =
         , div [ class "main" ]
             [ div [ class "filter-container" ]
                 [ text "Filter Container"
-                , div [ class "pill-container" ] (List.map renderTags allTags)
+                , renderTags allTags model
                 ]
             , div [ class "news-container" ]
                 [ text "News Container"
-                , div [] (List.map renderNewsFeed articles)
-                , renderStories model.stories
+                , div [] (List.map renderNewsFeed fakeArticles)
+                , div [] (List.map (\story -> renderStories story) model.stories)
                 ]
             ]
-        , div [] 
-              [ button [ onClick (FetchArticleIds) ] [text "Fetch Article Id"]
-              , text <| String.join " " <| List.map String.fromInt model.articleIds
-              ]
+        , div []
+            [ button [ onClick FetchArticleIds ] [ text "Fetch Article Id" ]
+            , text <| String.join " " <| List.map String.fromInt model.articleIds
+            ]
         ]
 
-renderStories : List Story -> Html Msg
-renderStories stories =
-    case List.head stories of
-        Just story ->
-            div [] [ text story.title ]
-        Nothing ->
-            div [] []
+
+renderStories : Story -> Html Msg
+renderStories story =
+    h4 [] [ text story.title ]
+
 
 renderToast : String -> Html Msg
 renderToast toast =
     div [] [ text toast ]
+
+
 
 ---- PROGRAM ----
 
