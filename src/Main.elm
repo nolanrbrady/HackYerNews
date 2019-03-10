@@ -29,13 +29,16 @@ type alias FakeNews =
 --   , score : Int
 --   , time : Int
 --   , title : String
---   -- , type :: String
+--   , type :: String
 --   , url : String
 --   }
 
 
 type alias Story =
     { title : String
+
+    -- , url : String
+    -- , text : String
     }
 
 
@@ -63,7 +66,7 @@ init =
       , toasties = Toasty.initialState
       , stories = []
       }
-    , Cmd.none
+    , fetchArticleIds
     )
 
 
@@ -224,13 +227,8 @@ view model =
                 ]
             , div [ class "news-container" ]
                 [ text "News Container"
-                , div [] (List.map renderNewsFeed fakeArticles)
                 , div [] (List.map (\story -> renderStories story) model.stories)
                 ]
-            ]
-        , div []
-            [ button [ onClick FetchArticleIds ] [ text "Fetch Article Id" ]
-            , text <| String.join " " <| List.map String.fromInt model.articleIds
             ]
         ]
 
