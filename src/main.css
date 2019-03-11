@@ -118,9 +118,36 @@ button:focus {
     outline: none;
 }
 
+.news {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-left: 5%;
+}
 
+.news-title {
+    padding-top: 1.5em;
+    padding-bottom: 1em;
+    justify-content: center;
+    align-items: center;
+}
 
+.news-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 20%;
+}
 
+.margin-left {
+    margin-left: 10%;
+}
+
+.divider {
+    border: 1px solid darkgrey;
+    width: 90%;
+}
 
 
 

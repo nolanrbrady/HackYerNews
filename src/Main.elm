@@ -2,11 +2,11 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import HNApi exposing (fetchFakeNews)
-import Html exposing (Html, a, button, div, h1, h2, h4, img, p, text)
-import Html.Attributes exposing (class, href, src, target)
+import Html exposing (Html, a, button, div, h1, h2, h4, i, img, input, p, span, text)
+import Html.Attributes exposing (class, href, src, target, type_)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, field, int, list, map2, map3, string)
+import Json.Decode exposing (Decoder, field, int, list, map2, map3, map4, string)
 import List.Extra exposing (unique)
 import Toasty
 import Toasty.Defaults
@@ -38,15 +38,17 @@ type alias Story =
     { title : String
     , url : String
     , score : Int
+    , by : String
     }
 
 
 storyDecoder : Decoder Story
 storyDecoder =
-    map3 Story
+    map4 Story
         (field "title" string)
         (field "url" string)
         (field "score" int)
+        (field "by" string)
 
 
 type alias Model =
@@ -224,11 +226,12 @@ view model =
         , h1 [] [ text "Hack Yer News" ]
         , div [ class "main" ]
             [ div [ class "filter-container" ]
-                [ text "Filter Container"
+                [ h2 [ class "news-title" ] [ text "Filter Container" ]
                 , renderTags allTags model
+                , div [] [ input [ type_ "radio" ] [] ]
                 ]
             , div [ class "news-container" ]
-                [ text "News Container"
+                [ h2 [ class "news-title" ] [ text "News Container" ]
                 , div [] (List.map (\story -> renderStories story) model.stories)
                 ]
             ]
@@ -237,7 +240,14 @@ view model =
 
 renderStories : Story -> Html Msg
 renderStories story =
-    h4 [] [ a [ href story.url, target "_blank" ] [ text story.title ] ]
+    div [ class "news" ]
+        [ h4 [] [ a [ href story.url, target "_blank" ] [ text story.title ] ]
+        , div [ class "news-info" ]
+            [ p [] [ text ("Score: " ++ String.fromInt story.score) ]
+            , p [ class "margin-left" ] [ text ("By: " ++ story.by) ]
+            ]
+        , span [ class "divider" ] []
+        ]
 
 
 renderToast : String -> Html Msg
