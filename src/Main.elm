@@ -122,11 +122,11 @@ renderFilterOptions : Model -> Html Msg
 renderFilterOptions model =
     div [ class "inline" ]
         [ div [ class "inline" ]
-            [ input [ type_ "radio", name "sortBy", value "highest", onClick (SortBy "highest") ] []
+            [ input [ type_ "radio", name "sortBy", value "highest", onClick (SortBy Highest) ] []
             , p [] [ text "Highest Score First" ]
             ]
         , div [ class "inline" ]
-            [ input [ type_ "radio", name "sortBy", value "lowest", onClick (SortBy "lowest") ] []
+            [ input [ type_ "radio", name "sortBy", value "lowest", onClick (SortBy Lowest) ] []
             , p [] [ text "Lowest Score First" ]
             ]
         ]
@@ -166,6 +166,11 @@ filterLowest stories =
 ---- UPDATE ----
 
 
+type SortOrder
+    = Highest
+    | Lowest
+
+
 type Msg
     = NoOp
     | FilterNews String
@@ -174,7 +179,7 @@ type Msg
     | ToastyMsg (Toasty.Msg Toasty.Defaults.Toast)
     | GetStory Int
     | GotStory (Result Http.Error Story)
-    | SortBy String
+    | SortBy SortOrder
 
 
 myConfig : Toasty.Config Msg
@@ -227,14 +232,11 @@ update msg model =
 
         SortBy order ->
             case order of
-                "highest" ->
+                Highest ->
                     ( { model | stories = Sort.list (Sort.by .score Sort.increasing |> Sort.reverse) model.stories }, Cmd.none )
 
-                "lowest" ->
+                Lowest ->
                     ( { model | stories = Sort.list (Sort.by .score Sort.increasing) model.stories }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
 
 
 
