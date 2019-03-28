@@ -3,11 +3,12 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import HNApi exposing (fetchFakeNews)
 import Html exposing (Html, a, button, div, h1, h2, h4, i, img, input, p, span, text)
-import Html.Attributes exposing (class, href, src, target, type_)
+import Html.Attributes exposing (class, href, name, src, target, type_, value)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map2, map3, map4, string)
 import List.Extra exposing (unique)
+import Sort
 import Toasty
 import Toasty.Defaults
 
@@ -117,6 +118,20 @@ renderNewsFeed news =
         ]
 
 
+renderFilterOptions : Model -> Html Msg
+renderFilterOptions model =
+    div [ class "inline" ]
+        [ div [ class "inline" ]
+            [ input [ type_ "radio", name "sortBy", value "highest", onClick (SortBy "highest") ] []
+            , p [] [ text "Highest Score First" ]
+            ]
+        , div [ class "inline" ]
+            [ input [ type_ "radio", name "sortBy", value "lowest", onClick (SortBy "lowest") ] []
+            , p [] [ text "Lowest Score First" ]
+            ]
+        ]
+
+
 manageActiveTags tag activeTags =
     if List.member tag activeTags then
         List.filter (\item -> tag /= item) activeTags
@@ -130,9 +145,24 @@ navItems item =
     p [ class "nav-item" ] [ text item ]
 
 
+filterHighest a b =
+    -- Need to figrue out how to sort in Elm...
+    case compare a b of
+        LT ->
+            GT
 
--- filterNews tag model =
---     List.filter (\news -> news.tag == tag) model.fakeNews
+        EQ ->
+            EQ
+
+        GT ->
+            LT
+
+
+filterLowest stories =
+    stories
+
+
+
 ---- UPDATE ----
 
 
@@ -144,6 +174,7 @@ type Msg
     | ToastyMsg (Toasty.Msg Toasty.Defaults.Toast)
     | GetStory Int
     | GotStory (Result Http.Error Story)
+    | SortBy String
 
 
 myConfig : Toasty.Config Msg
@@ -194,6 +225,17 @@ update msg model =
                     ( model, Cmd.none )
                         |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch article. Please try again!")
 
+        SortBy order ->
+            case order of
+                "highest" ->
+                    ( { model | stories = Sort.list (Sort.by .score Sort.increasing |> Sort.reverse) model.stories }, Cmd.none )
+
+                "lowest" ->
+                    ( { model | stories = Sort.list (Sort.by .score Sort.increasing) model.stories }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -228,7 +270,7 @@ view model =
             [ div [ class "filter-container" ]
                 [ h2 [ class "news-title" ] [ text "Filter Container" ]
                 , renderTags allTags model
-                , div [] [ input [ type_ "radio" ] [] ]
+                , renderFilterOptions model
                 ]
             , div [ class "news-container" ]
                 [ h2 [ class "news-title" ] [ text "News Container" ]

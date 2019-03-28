@@ -149,7 +149,12 @@ button:focus {
     width: 90%;
 }
 
-
+.inline {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
 
 
 
