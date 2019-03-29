@@ -156,7 +156,25 @@ button:focus {
     align-items: center;
 }
 
+.search-bar {
+    width: 50%;
+    background: transparent;
+    height: 20px;
+    border: transparent;
+    padding-left: 1.2em;
+    font-size: 18px;
+    color: black;
+    border-bottom: 1px solid black;
+}
+.search-bar::placeholder {
+    font-size: 18px;
+    font-weight: "300";
+    color: #293c4b;
+}
 
+.search-bar:focus{
+    outline: none;
+}
 
 
 

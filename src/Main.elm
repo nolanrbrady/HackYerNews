@@ -3,8 +3,8 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import HNApi exposing (fetchFakeNews)
 import Html exposing (Html, a, button, div, h1, h2, h4, i, img, input, p, span, text)
-import Html.Attributes exposing (class, href, name, src, target, type_, value)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, href, name, placeholder, src, target, type_, value)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map2, map3, map4, string)
 import List.Extra exposing (unique)
@@ -59,6 +59,7 @@ type alias Model =
     , articleIds : List Int
     , toasties : Toasty.Stack Toasty.Defaults.Toast
     , stories : List Story
+    , search : String
     }
 
 
@@ -70,6 +71,7 @@ init =
       , articleIds = []
       , toasties = Toasty.initialState
       , stories = []
+      , search = ""
       }
     , fetchArticleIds
     )
@@ -145,23 +147,6 @@ navItems item =
     p [ class "nav-item" ] [ text item ]
 
 
-filterHighest a b =
-    -- Need to figrue out how to sort in Elm...
-    case compare a b of
-        LT ->
-            GT
-
-        EQ ->
-            EQ
-
-        GT ->
-            LT
-
-
-filterLowest stories =
-    stories
-
-
 
 ---- UPDATE ----
 
@@ -180,6 +165,7 @@ type Msg
     | GetStory Int
     | GotStory (Result Http.Error Story)
     | SortBy SortOrder
+    | FilterTitles String
 
 
 myConfig : Toasty.Config Msg
@@ -207,6 +193,9 @@ update msg model =
 
         FetchArticleIds ->
             ( model, fetchArticleIds )
+
+        FilterTitles searchTerm ->
+            ( { model | search = searchTerm }, Cmd.none )
 
         GotArticleIds result ->
             case result of
@@ -276,6 +265,8 @@ view model =
                 ]
             , div [ class "news-container" ]
                 [ h2 [ class "news-title" ] [ text "News Container" ]
+                , input [ type_ "input", placeholder "Search Keywords Here", class "search-bar", onInput FilterTitles ] []
+                , p [] [ text model.search ]
                 , div [] (List.map (\story -> renderStories story) model.stories)
                 ]
             ]
