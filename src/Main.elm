@@ -8,6 +8,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, int, list, map2, map3, map4, string)
 import List.Extra exposing (unique)
+import Simple.Fuzzy
 import Sort
 import Toasty
 import Toasty.Defaults
@@ -195,7 +196,7 @@ update msg model =
             ( model, fetchArticleIds )
 
         FilterTitles searchTerm ->
-            ( { model | search = searchTerm }, Cmd.none )
+            ( { model | search = searchTerm, stories = Simple.Fuzzy.filter .title searchTerm model.stories }, Cmd.none )
 
         GotArticleIds result ->
             case result of
@@ -205,8 +206,8 @@ update msg model =
                 -- |> addToast (Toasty.Defaults.Success "Allright!" "Top Articles Fetched")
                 Err _ ->
                     ( model, Cmd.none )
-                        |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch top articles. Please try again!")
 
+        -- |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch top articles. Please try again!")
         GetStory storyId ->
             ( model, fetchArticle storyId )
 
@@ -217,8 +218,8 @@ update msg model =
 
                 Err _ ->
                     ( model, Cmd.none )
-                        |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch article. Please try again!")
 
+        -- |> addToast (Toasty.Defaults.Error "Oh no!" "Could not fetch article. Please try again!")
         SortBy order ->
             case order of
                 Highest ->
@@ -266,7 +267,6 @@ view model =
             , div [ class "news-container" ]
                 [ h2 [ class "news-title" ] [ text "News Container" ]
                 , input [ type_ "input", placeholder "Search Keywords Here", class "search-bar", onInput FilterTitles ] []
-                , p [] [ text model.search ]
                 , div [] (List.map (\story -> renderStories story) model.stories)
                 ]
             ]
